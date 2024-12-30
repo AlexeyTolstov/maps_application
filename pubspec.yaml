@@ -1,0 +1,30 @@
+name: maps_application
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.0.15
+  google_maps_flutter: ^2.6.1
+  geolocator: ^13.0.2
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
