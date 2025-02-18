@@ -6,7 +6,7 @@ import 'package:maps_application/widgets/auth/gosuslugi_button.dart';
 import 'package:maps_application/api_client.dart';
 import 'package:maps_application/widgets/auth/ok_button.dart';
 import 'package:maps_application/widgets/auth/vk_button.dart';
-import 'package:maps_application/widgets/login_password_input.dart';
+import 'package:maps_application/widgets/signin_password_input.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
