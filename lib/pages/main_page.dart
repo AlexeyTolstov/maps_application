@@ -3,6 +3,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:maps_application/api_client.dart';
 
+/// Нужно переписать:
+/// - Получение списка точек
+/// - получение предложений по {id}
+/// - редактирования предложения по {id}
+/// - создание предложения
+
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
@@ -11,10 +17,12 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  Position? userPosition;
+
   Marker? tempMarker;
   Set<Marker> _markers = {};
-  Position? userPosition;
-  bool isLoading = true;
+
+  bool isLoaded = false;
   int current_id = 0;
 
   Map<int, List<String>> pointsWithDescription = {};
@@ -51,7 +59,7 @@ class _MainPageState extends State<MainPage> {
             LatLng(userPosition?.latitude ?? 0, userPosition?.longitude ?? 0),
       ).then((_) {
         setState(() {
-          isLoading = false;
+          isLoaded = true;
         });
       });
     });
@@ -157,7 +165,7 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading)
+    if (!isLoaded)
       return Scaffold(
         body: Center(
           child: Column(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:maps_application/file_storage.dart';
-import 'package:maps_application/styles/app_colors.dart';
+import 'package:maps_application/styles/button_styles.dart';
 import 'package:maps_application/styles/font_styles.dart';
 import 'package:maps_application/widgets/auth/gosuslugi_button.dart';
 import 'package:maps_application/api_client.dart';
@@ -39,18 +39,14 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
               ),
             ),
+
             const SizedBox(height: 30),
 
             /// Кнопка "Зарегистрироваться"
             Center(
               child: TextButton(
                 onPressed: signUpValidation,
-                style: ButtonStyle(
-                  foregroundColor: WidgetStateProperty.all(
-                      LoginColors.loginButtonForegroundColor),
-                  backgroundColor: WidgetStateProperty.all(
-                      LoginColors.loginButtonBackgroundColor),
-                ),
+                style: AuthButtonsStyles.mainButton,
                 child: const SizedBox(
                   width: 300,
                   child: Text(
@@ -61,6 +57,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
               ),
             ),
+
             const SizedBox(height: 10),
 
             /// Кнопка "войти" - переход на страницу входа
@@ -68,12 +65,7 @@ class _SignUpPageState extends State<SignUpPage> {
               child: TextButton(
                 onPressed: () =>
                     Navigator.pushReplacementNamed(context, '/sign-in'),
-                style: ButtonStyle(
-                  foregroundColor: WidgetStateProperty.all(
-                      LoginColors.signUpButtonForegroundColor),
-                  backgroundColor: WidgetStateProperty.all(
-                      LoginColors.signUpButtonBackgroundColor),
-                ),
+                style: AuthButtonsStyles.secondaryButton,
                 child: const SizedBox(
                   width: 300,
                   child: Text(
@@ -85,12 +77,14 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
             ),
 
-            /// Вход через соцсети
             const SizedBox(height: 50),
+
+            /// Вход через соцсети
             const Text(
               "Зарегистрироваться через: ",
               style: LoginAndSignUpFontStyles.pharagraph,
             ),
+
             const SizedBox(height: 20),
 
             /// Войти через госуслуги
@@ -137,14 +131,24 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   void signUpValidation() {
-    createNewUser(
-      login: loginTextController.text,
-      password: passwordTextController.text,
-    );
+    if (loginTextController.text.length >= 1 &&
+        passwordTextController.text.length >= 1) {
+      createNewUser(
+        login: loginTextController.text,
+        password: passwordTextController.text,
+      );
 
-    HiveService.saveUser(User(
-      login: loginTextController.text,
-      password: passwordTextController.text,
-    )).then((value) => Navigator.pushReplacementNamed(context, '/maps_page'));
+      HiveService.saveUser(User(
+        login: loginTextController.text,
+        password: passwordTextController.text,
+      )).then((value) => Navigator.pushReplacementNamed(context, '/main_page'));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Не корректные данные'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
   }
 }

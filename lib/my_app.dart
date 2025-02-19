@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
 
   String initialRoute() {
     User? user = HiveService.getUser();
-    return (user == null) ? '/sign-in' : '/maps_page';
+    return (user == null) ? '/sign-in' : '/main_page';
   }
 
   @override
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
         '/sign-in/ok': (context) => const SignInOKPage(),
         '/sign-in/gosuslugi': (context) => const SignInGosuslugiPage(),
         '/sign-up': (context) => const SignUpPage(),
-        '/maps_page': (context) => const MainPage(),
+        '/main_page': (context) => const MainPage(),
         '/menu': (context) => const MenuPage(),
       },
     );

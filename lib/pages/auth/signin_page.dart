@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:maps_application/file_storage.dart';
-import 'package:maps_application/styles/app_colors.dart';
+import 'package:maps_application/styles/button_styles.dart';
 import 'package:maps_application/styles/font_styles.dart';
 import 'package:maps_application/widgets/auth/gosuslugi_button.dart';
 import 'package:maps_application/api_client.dart';
@@ -46,12 +46,7 @@ class _SignInPageState extends State<SignInPage> {
             Center(
               child: TextButton(
                 onPressed: signInValidation,
-                style: ButtonStyle(
-                  foregroundColor: WidgetStateProperty.all(
-                      LoginColors.loginButtonForegroundColor),
-                  backgroundColor: WidgetStateProperty.all(
-                      LoginColors.loginButtonBackgroundColor),
-                ),
+                style: AuthButtonsStyles.mainButton,
                 child: const SizedBox(
                   width: 300,
                   child: Text(
@@ -70,12 +65,7 @@ class _SignInPageState extends State<SignInPage> {
               child: TextButton(
                 onPressed: () =>
                     Navigator.pushReplacementNamed(context, '/sign-up'),
-                style: ButtonStyle(
-                  foregroundColor: WidgetStateProperty.all(
-                      LoginColors.signUpButtonForegroundColor),
-                  backgroundColor: WidgetStateProperty.all(
-                      LoginColors.signUpButtonBackgroundColor),
-                ),
+                style: AuthButtonsStyles.secondaryButton,
                 child: const SizedBox(
                   width: 300,
                   child: Text(
@@ -152,7 +142,7 @@ class _SignInPageState extends State<SignInPage> {
           login: loginTextController.text,
           password: passwordTextController.text,
         ),
-      ).then((value) => Navigator.pushReplacementNamed(context, '/maps_page'));
+      ).then((value) => Navigator.pushReplacementNamed(context, '/main_page'));
     }
   }
 }
