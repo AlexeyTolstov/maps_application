@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:maps_application/api_client.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -9,11 +10,19 @@ class MainPage extends StatefulWidget {
   _MainPageState createState() => _MainPageState();
 }
 
+/// Нужен рефакторинг создания и отметки точки
+
 class _MainPageState extends State<MainPage> {
   Marker? tempMarker;
   Set<Marker> _markers = {};
   Position? userPosition;
   bool isLoading = true;
+  int current_id = 0;
+
+  Map<int, List<String>> pointsWithDescription = {};
+
+  TextEditingController controllerNamePoint = TextEditingController();
+  TextEditingController controllerDescriptionPoint = TextEditingController();
 
   Future<void> getPosition() async {
     LocationPermission permission = await Geolocator.checkPermission();
@@ -31,19 +40,27 @@ class _MainPageState extends State<MainPage> {
           accuracy: LocationAccuracy.low,
         ),
       );
-      setState(() {});
     }
+
     if (userPosition != null)
       print("${userPosition!.latitude} ${userPosition!.longitude}");
+
+    setState(() {});
   }
 
   @override
   void initState() {
     getPosition().then((_) {
-      setState(() {
-        isLoading = false;
+      joke(
+              latLng: LatLng(
+                  userPosition?.latitude ?? 0, userPosition?.longitude ?? 0))
+          .then((args) {
+        setState(() {
+          isLoading = false;
+        });
       });
     });
+
     super.initState();
   }
 
@@ -70,23 +87,35 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       appBar: AppBar(title: Text('Карта с панелью')),
       body: GoogleMap(
-        mapType: MapType.hybrid,
+        mapType: MapType.normal,
         markers: {
           ..._markers,
           if (tempMarker != null) tempMarker!,
         },
         onTap: (LatLng latLng) {
           print("${latLng.latitude} ${latLng.longitude}");
-
+          int my_id = current_id++;
           setState(() {
             tempMarker = Marker(
               markerId: MarkerId(latLng.toString()),
               position: latLng,
-              infoWindow: InfoWindow(
-                title: 'Точка на карте',
-                snippet:
-                    'Lat: ${latLng.latitude.toStringAsFixed(4)}\nLng: ${latLng.longitude.toStringAsFixed(4)}',
-              ),
+              onTap: () {
+                controllerNamePoint.text = pointsWithDescription[my_id]![0];
+                controllerDescriptionPoint.text =
+                    pointsWithDescription[my_id]![1];
+
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  context: context,
+                  builder: (context) => _buildBottomSheet(latLng, my_id),
+                ).then((value) {
+                  setState(() {
+                    tempMarker = null;
+                    controllerNamePoint.clear();
+                    controllerDescriptionPoint.clear();
+                  });
+                });
+              },
               icon: BitmapDescriptor.defaultMarker,
             );
           });
@@ -94,10 +123,12 @@ class _MainPageState extends State<MainPage> {
           showModalBottomSheet(
             isScrollControlled: true,
             context: context,
-            builder: (context) => _buildBottomSheet(latLng),
+            builder: (context) => _buildBottomSheet(latLng, my_id),
           ).then((value) {
             setState(() {
               tempMarker = null;
+              controllerNamePoint.clear();
+              controllerDescriptionPoint.clear();
             });
           });
         },
@@ -107,18 +138,18 @@ class _MainPageState extends State<MainPage> {
                 zoom: 15,
               )
             : CameraPosition(
-                target: LatLng(0, 0),
+                target: LatLng(55.75222, 37.61556), // Москва
                 zoom: 5,
               ),
       ),
     );
   }
 
-  Widget _buildBottomSheet(LatLng latLng) {
+  Widget _buildBottomSheet(LatLng latLng, int my_id) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.5,
-      minChildSize: 0.3,
-      maxChildSize: 1.0,
+      initialChildSize: 0.55,
+      minChildSize: 0.55,
+      maxChildSize: 0.7,
       expand: false,
       builder: (context, scrollController) {
         return SingleChildScrollView(
@@ -131,20 +162,67 @@ class _MainPageState extends State<MainPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("Широта ${latLng.latitude.toStringAsFixed(5)}"),
-                  Text("Долгота ${latLng.longitude.toStringAsFixed(5)}"),
+                  /// Имя точки
+
+                  TextField(
+                    controller: controllerNamePoint,
+                    decoration: InputDecoration(
+                      hintText: "Название",
+                      border: OutlineInputBorder(),
+                    ),
+                    textInputAction: TextInputAction.done,
+                  ),
+
+                  SizedBox(height: 10),
+
+                  /// Описание точки
+
+                  TextField(
+                    controller: controllerDescriptionPoint,
+                    decoration: InputDecoration(
+                      hintText: "Описание",
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 10,
+                    keyboardType: TextInputType.multiline,
+                    textInputAction: TextInputAction.done,
+                  ),
+
+                  /// Панель кнопок
+
                   Row(
                     children: [
+                      /// Кнопка добавления
                       TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _markers.add(tempMarker!);
-                              tempMarker = null;
-                            });
-                          },
-                          child: const Text("Добавить точку"))
+                        onPressed: () {
+                          setState(() {
+                            _markers.add(tempMarker!);
+                            pointsWithDescription[my_id] = [
+                              controllerNamePoint.text,
+                              controllerDescriptionPoint.text
+                            ];
+                            tempMarker = null;
+                            Navigator.pop(context);
+                          });
+                        },
+                        child: const Text("Добавить"),
+                      ),
+
+                      /// Кнопка отмены
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          tempMarker = null;
+                        },
+                        child: const Text("Отмена"),
+                      ),
                     ],
-                  )
+                  ),
+
+                  /// Координаты точки
+                  Text(
+                    "Координаты: ${latLng.latitude.toStringAsFixed(3)}/${latLng.longitude.toStringAsFixed(3)}",
+                  ),
                 ],
               ),
             ),

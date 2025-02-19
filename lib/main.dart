@@ -6,7 +6,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await HiveService.init();
 
-  HiveService.deleteUser();
+  // HiveService.deleteUser();
 
   runApp(const MyApp());
 }

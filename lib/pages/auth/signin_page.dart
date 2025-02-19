@@ -127,9 +127,9 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   void signInValidation() {
-    bool isValid = ApiClient.validateUser(
-      loginTextController.text,
-      passwordTextController.text,
+    bool isValid = signInUser(
+      login: loginTextController.text,
+      password: passwordTextController.text,
     );
 
     if (!isValid) {

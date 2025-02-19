@@ -134,22 +134,14 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   void signUpValidation() {
-    bool isValid = ApiClient.createNewUser(
-      loginTextController.text,
-      passwordTextController.text,
+    createNewUser(
+      login: loginTextController.text,
+      password: passwordTextController.text,
     );
-    if (!isValid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Такой логин уже занят'),
-          duration: Duration(seconds: 3),
-        ),
-      );
-    } else {
-      HiveService.saveUser(User(
-        login: loginTextController.text,
-        password: passwordTextController.text,
-      )).then((value) => Navigator.pushReplacementNamed(context, '/maps_page'));
-    }
+
+    HiveService.saveUser(User(
+      login: loginTextController.text,
+      password: passwordTextController.text,
+    )).then((value) => Navigator.pushReplacementNamed(context, '/maps_page'));
   }
 }

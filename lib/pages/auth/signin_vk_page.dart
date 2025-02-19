@@ -20,7 +20,7 @@ class _SignInVKPageState extends State<SignInVKPage> {
         padding: const EdgeInsets.all(30.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [const Text("Дима, сверстай страничку")],
+          children: [const Text("Пока нельзя ;(")],
         ),
       ),
     );
