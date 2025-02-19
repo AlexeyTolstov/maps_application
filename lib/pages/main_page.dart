@@ -10,8 +10,6 @@ class MainPage extends StatefulWidget {
   _MainPageState createState() => _MainPageState();
 }
 
-/// Нужен рефакторинг создания и отметки точки
-
 class _MainPageState extends State<MainPage> {
   Marker? tempMarker;
   Set<Marker> _markers = {};
@@ -28,7 +26,7 @@ class _MainPageState extends State<MainPage> {
     LocationPermission permission = await Geolocator.checkPermission();
 
     if (permission == LocationPermission.denied) {
-      permission = await Geolocator.checkPermission();
+      permission = await Geolocator.requestPermission();
     }
 
     if (permission == LocationPermission.denied ||
@@ -41,32 +39,120 @@ class _MainPageState extends State<MainPage> {
         ),
       );
     }
-
-    if (userPosition != null)
-      print("${userPosition!.latitude} ${userPosition!.longitude}");
-
     setState(() {});
   }
 
   @override
   void initState() {
+    super.initState();
     getPosition().then((_) {
       joke(
-              latLng: LatLng(
-                  userPosition?.latitude ?? 0, userPosition?.longitude ?? 0))
-          .then((args) {
+        latLng:
+            LatLng(userPosition?.latitude ?? 0, userPosition?.longitude ?? 0),
+      ).then((_) {
         setState(() {
           isLoading = false;
         });
       });
     });
 
-    super.initState();
+    Future.delayed(Duration.zero, () => _showTutorialDialog());
   }
 
-  @override
-  void dispose() {
-    super.dispose();
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text("Добро пожаловать!"),
+        content: Text(
+            "Хотите пройти небольшое обучение по использованию приложения?"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text("Нет, я все знаю"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _tutorial1();
+            },
+            child: Text("Да"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _tutorial1() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.transparent,
+        title: Text(
+          "Обучение",
+          style: TextStyle(color: Colors.white),
+        ),
+        content: Container(
+          width: double.infinity,
+          child: Container(
+            padding: EdgeInsets.all(20),
+            child: Text(
+              style: TextStyle(color: Colors.white),
+              "Если хотите добавить точку с описанием, просто нажмите в нужное место, введите текст – и готово!",
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            style: ButtonStyle(
+                backgroundColor: WidgetStatePropertyAll(Colors.white)),
+            onPressed: () {
+              Navigator.pop(context);
+              _tutorial2();
+            },
+            child: Text("Дальше ->"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _tutorial2() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.transparent,
+        title: Text(
+          "Обучение",
+          style: TextStyle(color: Colors.white),
+        ),
+        content: Container(
+          width: double.infinity,
+          child: Container(
+            padding: EdgeInsets.all(20),
+            child: Text(
+              style: TextStyle(color: Colors.white),
+              "Чтобы построить маршрут или добавить предложение, откройте меню в верхнем правом углу.",
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            style: ButtonStyle(
+                backgroundColor: WidgetStatePropertyAll(Colors.white)),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text("Завершить!"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -85,7 +171,17 @@ class _MainPageState extends State<MainPage> {
       );
 
     return Scaffold(
-      appBar: AppBar(title: Text('Карта с панелью')),
+      appBar: AppBar(
+        title: Text('Карта'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.pushNamed(context, "/menu");
+            },
+            icon: Icon(Icons.menu),
+          )
+        ],
+      ),
       body: GoogleMap(
         mapType: MapType.normal,
         markers: {
@@ -93,22 +189,21 @@ class _MainPageState extends State<MainPage> {
           if (tempMarker != null) tempMarker!,
         },
         onTap: (LatLng latLng) {
-          print("${latLng.latitude} ${latLng.longitude}");
           int my_id = current_id++;
           setState(() {
             tempMarker = Marker(
               markerId: MarkerId(latLng.toString()),
               position: latLng,
               onTap: () {
-                controllerNamePoint.text = pointsWithDescription[my_id]![0];
+                controllerNamePoint.text =
+                    pointsWithDescription[my_id]?[0] ?? "";
                 controllerDescriptionPoint.text =
-                    pointsWithDescription[my_id]![1];
-
+                    pointsWithDescription[my_id]?[1] ?? "";
                 showModalBottomSheet(
                   isScrollControlled: true,
                   context: context,
                   builder: (context) => _buildBottomSheet(latLng, my_id),
-                ).then((value) {
+                ).then((_) {
                   setState(() {
                     tempMarker = null;
                     controllerNamePoint.clear();
@@ -124,7 +219,7 @@ class _MainPageState extends State<MainPage> {
             isScrollControlled: true,
             context: context,
             builder: (context) => _buildBottomSheet(latLng, my_id),
-          ).then((value) {
+          ).then((_) {
             setState(() {
               tempMarker = null;
               controllerNamePoint.clear();
@@ -138,7 +233,7 @@ class _MainPageState extends State<MainPage> {
                 zoom: 15,
               )
             : CameraPosition(
-                target: LatLng(55.75222, 37.61556), // Москва
+                target: LatLng(55.75222, 37.61556),
                 zoom: 5,
               ),
       ),
@@ -154,77 +249,58 @@ class _MainPageState extends State<MainPage> {
       builder: (context, scrollController) {
         return SingleChildScrollView(
           controller: scrollController,
-          child: SizedBox(
-            width: double.infinity,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  /// Имя точки
-
-                  TextField(
-                    controller: controllerNamePoint,
-                    decoration: InputDecoration(
-                      hintText: "Название",
-                      border: OutlineInputBorder(),
-                    ),
-                    textInputAction: TextInputAction.done,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  textInputAction: TextInputAction.done,
+                  controller: controllerNamePoint,
+                  decoration: InputDecoration(
+                    hintText: "Название",
+                    border: OutlineInputBorder(),
                   ),
-
-                  SizedBox(height: 10),
-
-                  /// Описание точки
-
-                  TextField(
-                    controller: controllerDescriptionPoint,
-                    decoration: InputDecoration(
-                      hintText: "Описание",
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLines: 10,
-                    keyboardType: TextInputType.multiline,
-                    textInputAction: TextInputAction.done,
+                ),
+                SizedBox(height: 10),
+                TextField(
+                  textInputAction: TextInputAction.done,
+                  controller: controllerDescriptionPoint,
+                  decoration: InputDecoration(
+                    hintText: "Описание",
+                    border: OutlineInputBorder(),
                   ),
-
-                  /// Панель кнопок
-
-                  Row(
-                    children: [
-                      /// Кнопка добавления
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _markers.add(tempMarker!);
-                            pointsWithDescription[my_id] = [
-                              controllerNamePoint.text,
-                              controllerDescriptionPoint.text
-                            ];
-                            tempMarker = null;
-                            Navigator.pop(context);
-                          });
-                        },
-                        child: const Text("Добавить"),
-                      ),
-
-                      /// Кнопка отмены
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
+                  maxLines: 10,
+                ),
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _markers.add(tempMarker!);
+                          pointsWithDescription[my_id] = [
+                            controllerNamePoint.text,
+                            controllerDescriptionPoint.text,
+                          ];
                           tempMarker = null;
-                        },
-                        child: const Text("Отмена"),
-                      ),
-                    ],
-                  ),
-
-                  /// Координаты точки
-                  Text(
-                    "Координаты: ${latLng.latitude.toStringAsFixed(3)}/${latLng.longitude.toStringAsFixed(3)}",
-                  ),
-                ],
-              ),
+                          Navigator.pop(context);
+                        });
+                      },
+                      child: Text("Добавить"),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        tempMarker = null;
+                      },
+                      child: Text("Отмена"),
+                    ),
+                  ],
+                ),
+                Text(
+                    "Координаты: ${latLng.latitude.toStringAsFixed(3)}/${latLng.longitude.toStringAsFixed(3)}"),
+              ],
             ),
           ),
         );

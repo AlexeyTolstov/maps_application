@@ -6,6 +6,7 @@ import 'package:maps_application/pages/auth/signin_page.dart';
 import 'package:maps_application/pages/auth/signin_vk_page.dart';
 import 'package:maps_application/pages/main_page.dart';
 import 'package:maps_application/pages/auth/signup_page.dart';
+import 'package:maps_application/pages/menu_page.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
         '/sign-in/gosuslugi': (context) => const SignInGosuslugiPage(),
         '/sign-up': (context) => const SignUpPage(),
         '/maps_page': (context) => const MainPage(),
+        '/menu': (context) => const MenuPage(),
       },
     );
   }
