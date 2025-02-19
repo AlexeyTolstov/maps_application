@@ -22,6 +22,7 @@ class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: SignInAppBar(),
       body: Padding(
         padding: const EdgeInsets.all(30.0),
@@ -62,6 +63,8 @@ class _SignInPageState extends State<SignInPage> {
               ),
             ),
 
+            const SizedBox(height: 10),
+
             /// Кнопка "зарегистрироваться"
             Center(
               child: TextButton(
@@ -91,15 +94,19 @@ class _SignInPageState extends State<SignInPage> {
               "Войти через: ",
               style: LoginAndSignUpFontStyles.pharagraph,
             ),
+
+            const SizedBox(height: 20),
             Center(
               child: GosuslugiButton(
                 onTap: () => Navigator.pushNamed(context, '/sign-in/gosuslugi'),
               ),
             ),
+            SizedBox(height: 10),
 
             /// ОК и ВК
             Center(
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   OKButton(
                     onTap: () => Navigator.pushNamed(context, '/sign-in/ok'),

@@ -25,8 +25,10 @@ class _InputLoginPasswordState extends State<InputLoginPassword> {
           controller: widget.loginTextController,
           decoration: const InputDecoration(
             hintText: "Логин",
+            border: OutlineInputBorder(),
           ),
         ),
+        SizedBox(height: 10),
         TextField(
           controller: widget.passwordTextController,
           obscureText: isHide,
@@ -40,6 +42,7 @@ class _InputLoginPasswordState extends State<InputLoginPassword> {
               icon: Icon(isHide ? Icons.visibility_off : Icons.visibility),
             ),
             hintText: "Пароль",
+            border: OutlineInputBorder(),
           ),
         ),
       ],

@@ -22,6 +22,7 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: SignUpAppBar(),
       body: Padding(
         padding: const EdgeInsets.all(30.0),
@@ -60,6 +61,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 10),
 
             /// Кнопка "войти" - переход на страницу входа
             Center(
@@ -89,6 +91,7 @@ class _SignUpPageState extends State<SignUpPage> {
               "Зарегистрироваться через: ",
               style: LoginAndSignUpFontStyles.pharagraph,
             ),
+            const SizedBox(height: 20),
 
             /// Войти через госуслуги
             Center(
@@ -96,20 +99,20 @@ class _SignUpPageState extends State<SignUpPage> {
                 onTap: () => Navigator.pushNamed(context, '/sign-in/gosuslugi'),
               ),
             ),
+            SizedBox(height: 10),
 
             /// ОК и ВК
-            Center(
-              child: Row(
-                children: [
-                  OKButton(
-                    onTap: () => Navigator.pushNamed(context, '/sign-in/ok'),
-                  ),
-                  SizedBox(width: 50),
-                  VKButton(
-                    onTap: () => Navigator.pushNamed(context, '/sign-in/vk'),
-                  ),
-                ],
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                OKButton(
+                  onTap: () => Navigator.pushNamed(context, '/sign-in/ok'),
+                ),
+                SizedBox(width: 50),
+                VKButton(
+                  onTap: () => Navigator.pushNamed(context, '/sign-in/vk'),
+                ),
+              ],
             ),
           ],
         ),

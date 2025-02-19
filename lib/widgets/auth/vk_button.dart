@@ -11,7 +11,7 @@ class VKButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: const Image(
-        width: 80,
+        width: 50,
         image: ApplicationImages.VKImage,
       ),
     );
