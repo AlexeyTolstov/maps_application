@@ -16,7 +16,7 @@ class Tutorial {
       title: "Добро пожаловать!",
       content: "Хотите пройти небольшое обучение по использованию приложения?",
       actions: [
-        _dialogButton("Нет, я все знаю", () => Navigator.pop(context)),
+        _dialogButton("Нет, я все знаю", () {}),
         _dialogButton("Да", () {
           _showStep(0);
         }),

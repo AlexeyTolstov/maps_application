@@ -5,7 +5,7 @@ import 'package:maps_application/api_client.dart';
 import 'package:maps_application/data/suggestion.dart';
 import 'package:maps_application/widgets/tutorial.dart';
 
-int myUserId = 1;
+int myUserId = 0;
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
