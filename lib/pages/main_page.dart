@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:maps_application/api_client.dart';
+import 'package:maps_application/data/suggestion.dart';
+import 'package:maps_application/widgets/tutorial.dart';
 
-/// Нужно переписать:
-/// - Получение списка точек
-/// - получение предложений по {id}
-/// - редактирования предложения по {id}
-/// - создание предложения
+int myUserId = 1;
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -22,10 +20,8 @@ class _MainPageState extends State<MainPage> {
   Marker? tempMarker;
   Set<Marker> _markers = {};
 
+  bool isEnabled = true;
   bool isLoaded = false;
-  int current_id = 0;
-
-  Map<int, List<String>> pointsWithDescription = {};
 
   TextEditingController controllerNamePoint = TextEditingController();
   TextEditingController controllerDescriptionPoint = TextEditingController();
@@ -50,6 +46,32 @@ class _MainPageState extends State<MainPage> {
     setState(() {});
   }
 
+  void update_points() {
+    for (var suggestion in getListPoints()) {
+      var suggestionMarker = Marker(
+        markerId: MarkerId(suggestion.coords.toString()),
+        position: suggestion.coords!,
+        onTap: () {
+          setState(() => isEnabled = (myUserId == suggestion.author_id));
+          showModalBottomSheet(
+            isScrollControlled: true,
+            context: context,
+            builder: (context) => _buildBottomSheet(suggestion),
+          ).then((_) {
+            setState(() {
+              isEnabled = false;
+              controllerNamePoint.clear();
+              controllerDescriptionPoint.clear();
+            });
+          });
+        },
+        icon: BitmapDescriptor.defaultMarker,
+      );
+
+      _markers.add(suggestionMarker);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -64,103 +86,10 @@ class _MainPageState extends State<MainPage> {
       });
     });
 
-    Future.delayed(Duration.zero, () => _showTutorialDialog());
-  }
+    update_points();
 
-  void _showTutorialDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text("Добро пожаловать!"),
-        content: Text(
-            "Хотите пройти небольшое обучение по использованию приложения?"),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text("Нет, я все знаю"),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _tutorial1();
-            },
-            child: Text("Да"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _tutorial1() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.transparent,
-        title: Text(
-          "Обучение",
-          style: TextStyle(color: Colors.white),
-        ),
-        content: Container(
-          width: double.infinity,
-          child: Container(
-            padding: EdgeInsets.all(20),
-            child: Text(
-              style: TextStyle(color: Colors.white),
-              "Если хотите добавить точку с описанием, просто нажмите в нужное место, введите текст – и готово!",
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            style: ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(Colors.white)),
-            onPressed: () {
-              Navigator.pop(context);
-              _tutorial2();
-            },
-            child: Text("Дальше ->"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _tutorial2() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.transparent,
-        title: Text(
-          "Обучение",
-          style: TextStyle(color: Colors.white),
-        ),
-        content: Container(
-          width: double.infinity,
-          child: Container(
-            padding: EdgeInsets.all(20),
-            child: Text(
-              style: TextStyle(color: Colors.white),
-              "Чтобы построить маршрут или добавить предложение, откройте меню в верхнем правом углу.",
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            style: ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(Colors.white)),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text("Завершить!"),
-          ),
-        ],
-      ),
-    );
+    setState(() {});
+    Future.delayed(Duration.zero, () => Tutorial(context).showTutorialDialog());
   }
 
   @override
@@ -197,23 +126,30 @@ class _MainPageState extends State<MainPage> {
           if (tempMarker != null) tempMarker!,
         },
         onTap: (LatLng latLng) {
-          int my_id = current_id++;
+          Suggestion tempSuggestion = Suggestion(
+              name: "", description: "", author_id: myUserId, coords: latLng);
+
+          controllerNamePoint.text = tempSuggestion.name;
+          controllerDescriptionPoint.text = tempSuggestion.description;
+
+          isEnabled = (myUserId == tempSuggestion.author_id);
+
           setState(() {
             tempMarker = Marker(
               markerId: MarkerId(latLng.toString()),
               position: latLng,
               onTap: () {
-                controllerNamePoint.text =
-                    pointsWithDescription[my_id]?[0] ?? "";
-                controllerDescriptionPoint.text =
-                    pointsWithDescription[my_id]?[1] ?? "";
+                setState(() {
+                  isEnabled = (myUserId == tempSuggestion.author_id);
+                });
                 showModalBottomSheet(
                   isScrollControlled: true,
                   context: context,
-                  builder: (context) => _buildBottomSheet(latLng, my_id),
+                  builder: (context) => _buildBottomSheet(tempSuggestion),
                 ).then((_) {
                   setState(() {
                     tempMarker = null;
+                    isEnabled = false;
                     controllerNamePoint.clear();
                     controllerDescriptionPoint.clear();
                   });
@@ -223,13 +159,16 @@ class _MainPageState extends State<MainPage> {
             );
           });
 
+          setState(() => isEnabled = (myUserId == tempSuggestion.author_id));
+
           showModalBottomSheet(
             isScrollControlled: true,
             context: context,
-            builder: (context) => _buildBottomSheet(latLng, my_id),
+            builder: (context) => _buildBottomSheet(tempSuggestion),
           ).then((_) {
             setState(() {
               tempMarker = null;
+              isEnabled = false;
               controllerNamePoint.clear();
               controllerDescriptionPoint.clear();
             });
@@ -241,6 +180,7 @@ class _MainPageState extends State<MainPage> {
                 zoom: 15,
               )
             : CameraPosition(
+                /// Москва
                 target: LatLng(55.75222, 37.61556),
                 zoom: 5,
               ),
@@ -248,7 +188,10 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Widget _buildBottomSheet(LatLng latLng, int my_id) {
+  Widget _buildBottomSheet(Suggestion suggestion) {
+    controllerNamePoint.text = suggestion.name;
+    controllerDescriptionPoint.text = suggestion.description;
+
     return DraggableScrollableSheet(
       initialChildSize: 0.55,
       minChildSize: 0.55,
@@ -266,37 +209,53 @@ class _MainPageState extends State<MainPage> {
                 TextField(
                   textInputAction: TextInputAction.done,
                   controller: controllerNamePoint,
+                  readOnly: !isEnabled,
                   decoration: InputDecoration(
                     hintText: "Название",
                     border: OutlineInputBorder(),
                   ),
+                  onChanged: (value) => suggestion.name = value,
                 ),
                 SizedBox(height: 10),
                 TextField(
                   textInputAction: TextInputAction.done,
                   controller: controllerDescriptionPoint,
+                  readOnly: !isEnabled,
                   decoration: InputDecoration(
                     hintText: "Описание",
                     border: OutlineInputBorder(),
                   ),
                   maxLines: 10,
+                  onChanged: (value) => suggestion.description = value,
                 ),
                 Row(
                   children: [
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          _markers.add(tempMarker!);
-                          pointsWithDescription[my_id] = [
-                            controllerNamePoint.text,
-                            controllerDescriptionPoint.text,
-                          ];
-                          tempMarker = null;
-                          Navigator.pop(context);
-                        });
-                      },
-                      child: Text("Добавить"),
-                    ),
+                    if (isEnabled)
+                      TextButton(
+                        onPressed: (isHaveId(suggestion.id))
+                            ? () {
+                                setState(() {
+                                  if (myUserId == suggestion.author_id)
+                                    editSuggestion(
+                                      suggestion.id,
+                                      name: suggestion.name,
+                                      description: suggestion.description,
+                                      category: suggestion.category,
+                                    );
+
+                                  tempMarker = null;
+                                  Navigator.pop(context);
+                                });
+                              }
+                            : () {
+                                if (myUserId == suggestion.author_id)
+                                  addSuggestion(suggestion);
+                                update_points();
+                                tempMarker = null;
+                                Navigator.pop(context);
+                              },
+                        child: Text("Добавить"),
+                      ),
                     TextButton(
                       onPressed: () {
                         Navigator.pop(context);
@@ -307,7 +266,7 @@ class _MainPageState extends State<MainPage> {
                   ],
                 ),
                 Text(
-                    "Координаты: ${latLng.latitude.toStringAsFixed(3)}/${latLng.longitude.toStringAsFixed(3)}"),
+                    "Координаты: ${suggestion.coords!.latitude.toStringAsFixed(3)}/${suggestion.coords!.longitude.toStringAsFixed(3)}"),
               ],
             ),
           ),
