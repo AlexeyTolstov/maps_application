@@ -1,102 +1,88 @@
 import 'package:flutter/material.dart';
 
+class Lesson {
+  final String title;
+  final String description;
+
+  Lesson({required this.title, required this.description});
+}
+
 class Tutorial {
-  BuildContext context;
+  final BuildContext context;
   Tutorial(this.context);
 
   void showTutorialDialog() {
+    _showDialog(
+      title: "Добро пожаловать!",
+      content: "Хотите пройти небольшое обучение по использованию приложения?",
+      actions: [
+        _dialogButton("Нет, я все знаю", () => Navigator.pop(context)),
+        _dialogButton("Да", () {
+          _showStep(0);
+        }),
+      ],
+    );
+  }
+
+  final List<String> steps = [
+    "На карте отмечены красные маркеры — это предложения пользователей. Нажмите на них, чтобы просмотреть детали и оставить свою оценку.",
+    "Чтобы добавить свою точку с предложением, просто коснитесь нужного места, введите текст — и всё готово!",
+    "Хотите предложить или изучить идеи, создать маршрут? Вверху справа находится меню — откройте его, и получите доступ ко всем возможностям.",
+    "Спасибо, что установили Альфа-версию! Мы ценим ваш интерес!",
+  ];
+
+  void _showStep(int stepIndex) {
+    _showDialog(
+      title: "Обучение",
+      content: steps[stepIndex],
+      actions: [
+        if (stepIndex > 0)
+          _dialogButton("<- Назад", () => _showStep(stepIndex - 1)),
+        if (stepIndex < steps.length - 1)
+          _dialogButton("Дальше ->", () => _showStep(stepIndex + 1))
+        else
+          _dialogButton("Завершить!", () {}),
+      ],
+      backgroundColor: Colors.transparent,
+      textColor: Colors.white,
+    );
+  }
+
+  void _showDialog({
+    required String title,
+    required String content,
+    required List<Widget> actions,
+    Color backgroundColor = Colors.white,
+    Color textColor = Colors.black,
+  }) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: Text("Добро пожаловать!"),
-        content: Text(
-            "Хотите пройти небольшое обучение по использованию приложения?"),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text("Нет, я все знаю"),
+        backgroundColor: backgroundColor,
+        title: Text(title, style: TextStyle(color: textColor)),
+        content: Container(
+          padding: EdgeInsets.all(20),
+          child: Text(
+            content,
+            style: TextStyle(color: textColor, fontSize: 17),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _tutorial1();
-            },
-            child: Text("Да"),
-          ),
-        ],
+        ),
+        actions: actions,
       ),
     );
   }
 
-  void _tutorial1() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.transparent,
-        title: Text(
-          "Обучение",
-          style: TextStyle(color: Colors.white),
-        ),
-        content: Container(
-          width: double.infinity,
-          child: Container(
-            padding: EdgeInsets.all(20),
-            child: Text(
-              style: TextStyle(color: Colors.white),
-              "Если хотите добавить точку с описанием, просто нажмите в нужное место, введите текст – и готово!",
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            style: ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(Colors.white)),
-            onPressed: () {
-              Navigator.pop(context);
-              _tutorial2();
-            },
-            child: Text("Дальше ->"),
-          ),
-        ],
+  TextButton _dialogButton(String text, VoidCallback onPressed) {
+    return TextButton(
+      style: ButtonStyle(
+        backgroundColor: WidgetStatePropertyAll(Colors.white),
       ),
-    );
-  }
-
-  void _tutorial2() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.transparent,
-        title: Text(
-          "Обучение",
-          style: TextStyle(color: Colors.white),
-        ),
-        content: Container(
-          width: double.infinity,
-          child: Container(
-            padding: EdgeInsets.all(20),
-            child: Text(
-              style: TextStyle(color: Colors.white),
-              "Чтобы построить маршрут или добавить предложение, откройте меню в верхнем правом углу.",
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            style: ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(Colors.white)),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text("Завершить!"),
-          ),
-        ],
-      ),
+      onPressed: () {
+        Navigator.pop(context);
+        onPressed();
+      },
+      child: Text(text),
     );
   }
 }

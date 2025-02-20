@@ -53,12 +53,6 @@ void createNewUser({required String login, required String password}) {
   /// Здесь нужен код создания
 }
 
-/// Нужно переписать:
-/// - Получение списка точек
-/// - получение предложений по {id}
-/// - редактирования предложения по {id}
-/// - создание предложения
-
 List<Suggestion> getListPoints() {
   List<Suggestion> result = [];
 
